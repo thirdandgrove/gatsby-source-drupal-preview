@@ -14,6 +14,8 @@ const {
 
 const micro = require(`micro`);
 
+const proxy = require('http-proxy-middleware');
+
 const {
   nodeFromData
 } = require(`./normalize`);
@@ -250,7 +252,6 @@ exports.sourceNodes = async ({
   nodes.forEach(n => createNode(n)); // listen for changes to nodes for preview mode
 
   if (process.env.NODE_ENV === 'development' && preview) {
-    const port = listenPort || 8080;
     const server = micro(async (req, res) => {
       const request = await micro.json(req);
       const nodeToUpdate = request.data;
@@ -264,6 +265,15 @@ exports.sourceNodes = async ({
 
       res.end('ok');
     });
-    server.listen(port, console.log('\x1b[32m', `listening to changes for live preview on port: ${port}`));
+    server.listen(8000, console.log('\x1b[32m', `listening to changes for live preview at route /___updatePreview`));
   }
+};
+
+exports.onCreateDevServer = ({
+  app
+}) => {
+  app.use('/___updatePreview/', proxy({
+    target: `http://localhost:8000`,
+    secure: false
+  }));
 };
