@@ -15,7 +15,7 @@ been used since jsonapi version `8.x-1.0-alpha4`.
 
 ## Install
 
-`npm install --save gatsby-source-drupal`
+`npm install --save gatsby-source-drupal-preview`
 
 ## How to use
 
@@ -24,14 +24,14 @@ been used since jsonapi version `8.x-1.0-alpha4`.
 module.exports = {
   plugins: [
     {
-      resolve: `gatsby-source-drupal`,
+      resolve: `gatsby-source-drupal-preview`,
       options: {
         baseUrl: `https://live-contentacms.pantheonsite.io/`,
-        apiBase: `api`, // optional, defaults to `jsonapi`
-      },
-    },
-  ],
-}
+        apiBase: `api` // optional, defaults to `jsonapi`
+      }
+    }
+  ]
+};
 ```
 
 ## Preview specific configuration
@@ -41,8 +41,8 @@ in order for preview to work we have to set up a few things
 In `gatsby-config` at the top we need to import and declare:
 
 ```javascript
-const proxy = require("http-proxy-middleware")
-const port = 8081
+const proxy = require('http-proxy-middleware');
+const port = 8081; // default is 8080
 ```
 
 now we can set up the plugin
@@ -55,20 +55,20 @@ module.exports = {
       options: {
         baseUrl: `...`,
         preview: true,
-        listenPort: port,
-      },
-    },
+        listenPort: port
+      }
+    }
   ],
   developMiddleware: app => {
     app.use(
-      "/.updatePreview/",
+      '/.updatePreview/',
       proxy({
         target: `http://localhost:${port}`,
-        secure: false,
+        secure: false
       })
-    )
-  },
-}
+    );
+  }
+};
 ```
 
 in your Drupal module configuration set the update URL to your instance URL with the specified path. Gatsby will handle forwarding the data to the plugin to update your content.
@@ -97,18 +97,18 @@ To retrieve only recipes with a specific tag you could do something like the fol
 module.exports = {
   plugins: [
     {
-      resolve: `gatsby-source-drupal`,
+      resolve: `gatsby-source-drupal-preview`,
       options: {
         baseUrl: `https://live-contentacms.pantheonsite.io/`,
         apiBase: `api`,
         filters: {
           // collection : filter
-          recipe: "filter[tags.name][value]=British",
-        },
-      },
-    },
-  ],
-}
+          recipe: 'filter[tags.name][value]=British'
+        }
+      }
+    }
+  ]
+};
 ```
 
 Which would result in Gatsby using the filtered collection https://live-contentacms.pantheonsite.io/api/recipes?filter[tags.name][value]=British to retrieve data.
@@ -123,18 +123,18 @@ First, you need a way to pass environment variables to the build process, so sec
 module.exports = {
   plugins: [
     {
-      resolve: `gatsby-source-drupal`,
+      resolve: `gatsby-source-drupal-preview`,
       options: {
         baseUrl: `https://live-contentacms.pantheonsite.io/`,
         apiBase: `api`, // optional, defaults to `jsonapi`
         basicAuth: {
           username: process.env.BASIC_AUTH_USERNAME,
-          password: process.env.BASIC_AUTH_PASSWORD,
-        },
-      },
-    },
-  ],
-}
+          password: process.env.BASIC_AUTH_PASSWORD
+        }
+      }
+    }
+  ]
+};
 ```
 
 ## Request Headers
@@ -146,17 +146,17 @@ You can add optional request headers to the request using `headers` param.
 module.exports = {
   plugins: [
     {
-      resolve: `gatsby-source-drupal`,
+      resolve: `gatsby-source-drupal-preview`,
       options: {
         baseUrl: `https://live-contentacms.pantheonsite.io/`,
         apiBase: `api`, // optional, defaults to `jsonapi`
         headers: {
-          Host: "https://example.com", // any valid request header here
-        },
-      },
-    },
-  ],
-}
+          Host: 'https://example.com' // any valid request header here
+        }
+      }
+    }
+  ]
+};
 ```
 
 ## GET Params
@@ -168,17 +168,17 @@ You can append optional GET request params to the request url using `params` opt
 module.exports = {
   plugins: [
     {
-      resolve: `gatsby-source-drupal`,
+      resolve: `gatsby-source-drupal-preview`,
       options: {
         baseUrl: `https://live-contentacms.pantheonsite.io/`,
         apiBase: `api`, // optional, defaults to `jsonapi`
         params: {
-          "api-key": "your-api-key-header-here", // any valid key value pair here
-        },
-      },
-    },
-  ],
-}
+          'api-key': 'your-api-key-header-here' // any valid key value pair here
+        }
+      }
+    }
+  ]
+};
 ```
 
 ## How to query
