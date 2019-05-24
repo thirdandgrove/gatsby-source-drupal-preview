@@ -110,9 +110,9 @@ exports.sourceNodes = async ({
     const data = await getNext(url);
     const result = {
       type,
-      data // eslint-disable-next-line consistent-return
+      data
+    }; // eslint-disable-next-line consistent-return
 
-    };
     return result;
   })); // Make list of all IDs so we can check against that when creating
   // relationships.
@@ -249,7 +249,7 @@ exports.sourceNodes = async ({
   }));
   nodes.forEach(n => createNode(n)); // listen for changes to nodes for preview mode
 
-  if (process.env.NODE_ENV === "development" && preview) {
+  if (process.env.NODE_ENV === 'development' && preview) {
     const port = listenPort || 8080;
     const server = micro(async (req, res) => {
       const request = await micro.json(req);
@@ -259,11 +259,11 @@ exports.sourceNodes = async ({
         const node = nodeFromData(nodeToUpdate, createNodeId);
         node.internal.contentDigest = createContentDigest(node);
         createNode(node);
-        console.log("\x1b[32m", `Updated node: ${node.id}`);
+        console.log('\x1b[32m', `Updated node: ${node.id}`);
       }
 
-      res.end("ok");
+      res.end('ok');
     });
-    server.listen(port, console.log("\x1b[32m", `listening to changes for live preview on port: ${port}`));
+    server.listen(port, console.log('\x1b[32m', `listening to changes for live preview on port: ${port}`));
   }
 };

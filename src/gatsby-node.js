@@ -3,12 +3,13 @@ const _ = require(`lodash`);
 const { createRemoteFileNode } = require(`gatsby-source-filesystem`);
 const { URL } = require(`url`);
 const micro = require(`micro`);
+const proxy = require('http-proxy-middleware');
 
 const { nodeFromData } = require(`./normalize`);
 
 exports.sourceNodes = async (
   { actions, store, cache, createNodeId, createContentDigest },
-  { baseUrl, apiBase, basicAuth, filters, headers, params, preview }
+  { baseUrl, apiBase, basicAuth, filters, headers, params, preview, listenPort }
 ) => {
   const { createNode } = actions;
 
@@ -233,25 +234,36 @@ exports.sourceNodes = async (
   );
 
   nodes.forEach(n => createNode(n));
+
+  // listen for changes to nodes for preview mode
+  if (process.env.NODE_ENV === 'development' && preview) {
+    const server = micro(async (req, res) => {
+      const request = await micro.json(req);
+      const nodeToUpdate = request.data;
+      if (nodeToUpdate.id) {
+        const node = nodeFromData(nodeToUpdate, createNodeId);
+        node.internal.contentDigest = createContentDigest(node);
+        createNode(node);
+        console.log('\x1b[32m', `Updated node: ${node.id}`);
+      }
+      res.end('ok');
+    });
+    server.listen(
+      8000,
+      console.log(
+        '\x1b[32m',
+        `listening to changes for live preview at route /___updatePreview`
+      )
+    );
+  }
 };
 
 exports.onCreateDevServer = ({ app }) => {
-  console.log(
-    '\x1b[32m',
-    `Drupal source plugin listening for changes on route '/___updatePreview'`
+  app.use(
+    '/___updatePreview/',
+    proxy({
+      target: `http://localhost:8000`,
+      secure: false
+    })
   );
-  app.get('/___updatePreview/', async function(req, res) {
-    console.log(req); // temporary testing logs
-    const request = await req.json();
-    console.log(request); // temporary testing logs
-
-    const nodeToUpdate = request.data;
-    if (nodeToUpdate.id) {
-      const node = nodeFromData(nodeToUpdate, createNodeId);
-      node.internal.contentDigest = createContentDigest(node);
-      createNode(node);
-      console.log('\x1b[32m', `Updated node: ${node.id}`);
-    }
-    res.end('ok');
-  });
 };

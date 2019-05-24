@@ -36,16 +36,7 @@ module.exports = {
 
 ## Preview specific configuration
 
-in order for preview to work we have to set up a few things
-
-In `gatsby-config` at the top we need to import and declare:
-
-```javascript
-const proxy = require('http-proxy-middleware');
-const port = 8081; // default is 8080
-```
-
-now we can set up the plugin
+in order for preview to work we have to use the `preview` flag in options
 
 ```javascript
 module.exports = {
@@ -54,20 +45,10 @@ module.exports = {
       resolve: `gatsby-source-drupal-preview`,
       options: {
         baseUrl: `...`,
-        preview: true,
-        listenPort: port
+        preview: true
       }
     }
-  ],
-  developMiddleware: app => {
-    app.use(
-      '/.updatePreview/',
-      proxy({
-        target: `http://localhost:${port}`,
-        secure: false
-      })
-    );
-  }
+  ]
 };
 ```
 
