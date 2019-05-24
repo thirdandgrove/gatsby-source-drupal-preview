@@ -1,19 +1,19 @@
-const axios = require(`axios`)
-const _ = require(`lodash`)
-const { createRemoteFileNode } = require(`gatsby-source-filesystem`)
-const { URL } = require(`url`)
-const micro = require(`micro`)
+const axios = require(`axios`);
+const _ = require(`lodash`);
+const { createRemoteFileNode } = require(`gatsby-source-filesystem`);
+const { URL } = require(`url`);
+const micro = require(`micro`);
 
-const { nodeFromData } = require(`./normalize`)
+const { nodeFromData } = require(`./normalize`);
 
 exports.sourceNodes = async (
   { actions, store, cache, createNodeId, createContentDigest },
-  { baseUrl, apiBase, basicAuth, filters, headers, params, preview, listenPort }
+  { baseUrl, apiBase, basicAuth, filters, headers, params, preview }
 ) => {
-  const { createNode } = actions
+  const { createNode } = actions;
 
   // Default apiBase to `jsonapi`
-  apiBase = apiBase || `jsonapi`
+  apiBase = apiBase || `jsonapi`;
 
   // Touch existing Drupal nodes so Gatsby doesn't garbage collect them.
   // _.values(store.getState().nodes)
@@ -22,7 +22,7 @@ exports.sourceNodes = async (
 
   // Fetch articles.
   // console.time(`fetch Drupal data`)
-  console.log(`Starting to fetch data from Drupal from ${baseUrl}/${apiBase}`)
+  console.log(`Starting to fetch data from Drupal from ${baseUrl}/${apiBase}`);
 
   // TODO restore this
   // let lastFetched
@@ -37,77 +37,77 @@ exports.sourceNodes = async (
   const data = await axios.get(`${baseUrl}/${apiBase}`, {
     auth: basicAuth,
     headers,
-    params,
-  })
+    params
+  });
   const allData = await Promise.all(
     _.map(data.data.links, async (url, type) => {
-      if (type === `self`) return
-      if (!url) return
-      if (!type) return
+      if (type === `self`) return;
+      if (!url) return;
+      if (!type) return;
       const getNext = async (url, data = []) => {
         if (typeof url === `object`) {
           // url can be string or object containing href field
-          url = url.href
+          url = url.href;
 
           // Apply any filters configured in gatsby-config.js. Filters
           // can be any valid JSON API filter query string.
           // See https://www.drupal.org/docs/8/modules/jsonapi/filtering
           if (typeof filters === `object`) {
             if (filters.hasOwnProperty(type)) {
-              url = url + `?${filters[type]}`
+              url = url + `?${filters[type]}`;
             }
           }
         }
 
-        let d
+        let d;
         try {
           d = await axios.get(url, {
             auth: basicAuth,
             headers,
-            params,
-          })
+            params
+          });
         } catch (error) {
           if (error.response && error.response.status == 405) {
             // The endpoint doesn't support the GET method, so just skip it.
-            return []
+            return [];
           } else {
-            console.error(`Failed to fetch ${url}`, error.message)
-            console.log(error.data)
-            throw error
+            console.error(`Failed to fetch ${url}`, error.message);
+            console.log(error.data);
+            throw error;
           }
         }
-        data = data.concat(d.data.data)
+        data = data.concat(d.data.data);
         if (d.data.links.next) {
-          data = await getNext(d.data.links.next, data)
+          data = await getNext(d.data.links.next, data);
         }
 
-        return data
-      }
+        return data;
+      };
 
-      const data = await getNext(url)
+      const data = await getNext(url);
 
       const result = {
         type,
-        data,
-      }
+        data
+      };
 
       // eslint-disable-next-line consistent-return
-      return result
+      return result;
     })
-  )
+  );
 
   // Make list of all IDs so we can check against that when creating
   // relationships.
-  const ids = {}
+  const ids = {};
   _.each(allData, contentType => {
-    if (!contentType) return
+    if (!contentType) return;
     _.each(contentType.data, datum => {
-      ids[datum.id] = true
-    })
-  })
+      ids[datum.id] = true;
+    });
+  });
 
   // Create back references
-  const backRefs = {}
+  const backRefs = {};
 
   /**
    * Adds back reference to linked entity, so we can later
@@ -116,55 +116,55 @@ exports.sourceNodes = async (
   const addBackRef = (linkedId, sourceDatum) => {
     if (ids[linkedId]) {
       if (!backRefs[linkedId]) {
-        backRefs[linkedId] = []
+        backRefs[linkedId] = [];
       }
       backRefs[linkedId].push({
         id: sourceDatum.id,
-        type: sourceDatum.type,
-      })
+        type: sourceDatum.type
+      });
     }
-  }
+  };
 
   _.each(allData, contentType => {
-    if (!contentType) return
+    if (!contentType) return;
     _.each(contentType.data, datum => {
       if (datum.relationships) {
         _.each(datum.relationships, (v, k) => {
-          if (!v.data) return
+          if (!v.data) return;
 
           if (_.isArray(v.data)) {
-            v.data.forEach(data => addBackRef(data.id, datum))
+            v.data.forEach(data => addBackRef(data.id, datum));
           } else {
-            addBackRef(v.data.id, datum)
+            addBackRef(v.data.id, datum);
           }
-        })
+        });
       }
-    })
-  })
+    });
+  });
 
   // Process nodes
-  const nodes = []
+  const nodes = [];
   _.each(allData, contentType => {
-    if (!contentType) return
+    if (!contentType) return;
 
     _.each(contentType.data, datum => {
-      const node = nodeFromData(datum, createNodeId)
+      const node = nodeFromData(datum, createNodeId);
 
-      node.relationships = {}
+      node.relationships = {};
 
       // Add relationships
       if (datum.relationships) {
         _.each(datum.relationships, (v, k) => {
-          if (!v.data) return
+          if (!v.data) return;
           if (_.isArray(v.data) && v.data.length > 0) {
             // Create array of all ids that are in our index
             node.relationships[`${k}___NODE`] = _.compact(
               v.data.map(data => (ids[data.id] ? createNodeId(data.id) : null))
-            )
+            );
           } else if (ids[v.data.id]) {
-            node.relationships[`${k}___NODE`] = createNodeId(v.data.id)
+            node.relationships[`${k}___NODE`] = createNodeId(v.data.id);
           }
-        })
+        });
       }
 
       // Add back reference relationships.
@@ -173,46 +173,46 @@ exports.sourceNodes = async (
       if (backRefs[datum.id]) {
         backRefs[datum.id].forEach(ref => {
           if (!node.relationships[`${ref.type}___NODE`]) {
-            node.relationships[`${ref.type}___NODE`] = []
+            node.relationships[`${ref.type}___NODE`] = [];
           }
 
-          node.relationships[`${ref.type}___NODE`].push(createNodeId(ref.id))
-        })
+          node.relationships[`${ref.type}___NODE`].push(createNodeId(ref.id));
+        });
       }
 
       if (_.isEmpty(node.relationships)) {
-        delete node.relationships
+        delete node.relationships;
       }
 
-      node.internal.contentDigest = createContentDigest(node)
-      nodes.push(node)
-    })
-  })
+      node.internal.contentDigest = createContentDigest(node);
+      nodes.push(node);
+    });
+  });
 
   // Download all files.
   await Promise.all(
     nodes.map(async node => {
-      let fileNode
+      let fileNode;
       if (
         node.internal.type === `files` ||
         node.internal.type === `file__file`
       ) {
         try {
-          let fileUrl = node.url
+          let fileUrl = node.url;
           if (typeof node.uri === `object`) {
             // Support JSON API 2.x file URI format https://www.drupal.org/node/2982209
-            fileUrl = node.uri.url
+            fileUrl = node.uri.url;
           }
           // Resolve w/ baseUrl if node.uri isn't absolute.
-          const url = new URL(fileUrl, baseUrl)
+          const url = new URL(fileUrl, baseUrl);
           // If we have basicAuth credentials, add them to the request.
           const auth =
             typeof basicAuth === `object`
               ? {
                   htaccess_user: basicAuth.username,
-                  htaccess_pass: basicAuth.password,
+                  htaccess_pass: basicAuth.password
                 }
-              : {}
+              : {};
           fileNode = await createRemoteFileNode({
             url: url.href,
             store,
@@ -220,40 +220,38 @@ exports.sourceNodes = async (
             createNode,
             createNodeId,
             parentNodeId: node.id,
-            auth,
-          })
+            auth
+          });
         } catch (e) {
           // Ignore
         }
         if (fileNode) {
-          node.localFile___NODE = fileNode.id
+          node.localFile___NODE = fileNode.id;
         }
       }
     })
-  )
+  );
 
-  nodes.forEach(n => createNode(n))
+  nodes.forEach(n => createNode(n));
+};
 
-  // listen for changes to nodes for preview mode
-  if (process.env.NODE_ENV === "development" && preview) {
-    const port = listenPort || 8080
-    const server = micro(async (req, res) => {
-      const request = await micro.json(req)
-      const nodeToUpdate = request.data
-      if (nodeToUpdate.id) {
-        const node = nodeFromData(nodeToUpdate, createNodeId)
-        node.internal.contentDigest = createContentDigest(node)
-        createNode(node)
-        console.log("\x1b[32m", `Updated node: ${node.id}`)
-      }
-      res.end("ok")
-    })
-    server.listen(
-      port,
-      console.log(
-        "\x1b[32m",
-        `listening to changes for live preview on port: ${port}`
-      )
-    )
-  }
-}
+exports.onCreateDevServer = ({ app }) => {
+  console.log(
+    '\x1b[32m',
+    `Drupal source plugin listening for changes on route '/___updatePreview'`
+  );
+  app.get('/___updatePreview/', async function(req, res) {
+    console.log(req); // temporary testing logs
+    const request = await req.json();
+    console.log(request); // temporary testing logs
+
+    const nodeToUpdate = request.data;
+    if (nodeToUpdate.id) {
+      const node = nodeFromData(nodeToUpdate, createNodeId);
+      node.internal.contentDigest = createContentDigest(node);
+      createNode(node);
+      console.log('\x1b[32m', `Updated node: ${node.id}`);
+    }
+    res.end('ok');
+  });
+};
