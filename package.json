@@ -1,7 +1,7 @@
 {
   "name": "gatsby-source-drupal-preview",
   "description": "Gatsby source plugin with preview",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": "Third and Grove <thirdandgrove.com>",
   "contributors": [
     "Kyle Mathews <mathews.kyle@gmail.com>",

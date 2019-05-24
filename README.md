@@ -17,23 +17,6 @@ been used since jsonapi version `8.x-1.0-alpha4`.
 
 `npm install --save gatsby-source-drupal-preview`
 
-## How to use
-
-```javascript
-// In your gatsby-config.js
-module.exports = {
-  plugins: [
-    {
-      resolve: `gatsby-source-drupal-preview`,
-      options: {
-        baseUrl: `https://live-contentacms.pantheonsite.io/`,
-        apiBase: `api` // optional, defaults to `jsonapi`
-      }
-    }
-  ]
-};
-```
-
 ## Preview specific configuration
 
 in order for preview to work we have to use the `preview` flag in options
@@ -52,7 +35,24 @@ module.exports = {
 };
 ```
 
-in your Drupal module configuration set the update URL to your instance URL with the specified path. Gatsby will handle forwarding the data to the plugin to update your content.
+in your Drupal module configuration set the update URL to your instance URL.
+
+## How to use
+
+```javascript
+// In your gatsby-config.js
+module.exports = {
+  plugins: [
+    {
+      resolve: `gatsby-source-drupal-preview`,
+      options: {
+        baseUrl: `https://live-contentacms.pantheonsite.io/`,
+        apiBase: `api` // optional, defaults to `jsonapi`
+      }
+    }
+  ]
+};
+```
 
 ### Filters
 
