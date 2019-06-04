@@ -239,13 +239,30 @@ exports.sourceNodes = async (
   if (process.env.NODE_ENV === 'development' && preview) {
     const server = micro(async (req, res) => {
       const request = await micro.json(req);
+
       const nodeToUpdate = JSON.parse(request).data;
-      if (nodeToUpdate.id) {
-        const node = nodeFromData(nodeToUpdate, createNodeId);
-        node.internal.contentDigest = createContentDigest(node);
-        createNode(node);
-        console.log('\x1b[32m', `Updated node: ${node.id}`);
+
+      const node = nodeFromData(nodeToUpdate, createNodeId);
+      node.relationships = {};
+      // handle relationships
+      if (nodeToUpdate.relationships) {
+        _.each(nodeToUpdate.relationships, (v, k) => {
+          if (!v.data) return;
+          if (_.isArray(v.data) && v.data.length > 0) {
+            v.data.forEach(data => addBackRef(data.id, nodeToUpdate));
+            node.relationships[`${k}___NODE`] = _.compact(
+              v.data.map(data => (ids[data.id] ? createNodeId(data.id) : null))
+            );
+          } else if (ids[v.data.id]) {
+            addBackRef(v.data.id, nodeToUpdate);
+            node.relationships[`${k}___NODE`] = createNodeId(v.data.id);
+          }
+        });
       }
+      node.internal.contentDigest = createContentDigest(node);
+      createNode(node);
+      console.log('\x1b[32m', `Updated node: ${node.id}`);
+
       res.end('ok');
     });
     server.listen(
