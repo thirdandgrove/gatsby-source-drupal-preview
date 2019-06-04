@@ -239,7 +239,7 @@ exports.sourceNodes = async (
   if (process.env.NODE_ENV === 'development' && preview) {
     const server = micro(async (req, res) => {
       const request = await micro.json(req);
-      const nodeToUpdate = request.data;
+      const nodeToUpdate = JSON.parse(request).data;
       if (nodeToUpdate.id) {
         const node = nodeFromData(nodeToUpdate, createNodeId);
         node.internal.contentDigest = createContentDigest(node);
@@ -249,7 +249,7 @@ exports.sourceNodes = async (
       res.end('ok');
     });
     server.listen(
-      8000,
+      8080,
       console.log(
         '\x1b[32m',
         `listening to changes for live preview at route /___updatePreview`
@@ -262,8 +262,11 @@ exports.onCreateDevServer = ({ app }) => {
   app.use(
     '/___updatePreview/',
     proxy({
-      target: `http://localhost:8000`,
-      secure: false
+      target: `http://localhost:8080`,
+      secure: false,
+      pathRewrite: {
+        '/___updatePreview/': ''
+      }
     })
   );
 };
