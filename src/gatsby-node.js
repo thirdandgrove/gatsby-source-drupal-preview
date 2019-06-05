@@ -259,6 +259,43 @@ exports.sourceNodes = async (
           }
         });
       }
+      // handle file downloads
+      if (
+        node.internal.type === `files` ||
+        node.internal.type === `file__file`
+      ) {
+        try {
+          let fileUrl = node.url;
+          if (typeof node.uri === `object`) {
+            // Support JSON API 2.x file URI format https://www.drupal.org/node/2982209
+            fileUrl = node.uri.url;
+          }
+          // Resolve w/ baseUrl if node.uri isn't absolute.
+          const url = new URL(fileUrl, baseUrl);
+          // If we have basicAuth credentials, add them to the request.
+          const auth =
+            typeof basicAuth === `object`
+              ? {
+                  htaccess_user: basicAuth.username,
+                  htaccess_pass: basicAuth.password
+                }
+              : {};
+          fileNode = await createRemoteFileNode({
+            url: url.href,
+            store,
+            cache,
+            createNode,
+            createNodeId,
+            parentNodeId: node.id,
+            auth
+          });
+        } catch (e) {
+          // Ignore
+        }
+        if (fileNode) {
+          node.localFile___NODE = fileNode.id;
+        }
+      }
       node.internal.contentDigest = createContentDigest(node);
       createNode(node);
       console.log('\x1b[32m', `Updated node: ${node.id}`);
