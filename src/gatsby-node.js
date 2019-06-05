@@ -253,13 +253,24 @@ exports.sourceNodes = async (
             node.relationships[`${key}___NODE`] = _.compact(
               value.data.map(data => createNodeId(data.id))
             );
-          } else if (ids[value.data.id]) {
+          } else {
             addBackRef(value.data.id, nodeToUpdate);
             node.relationships[`${key}___NODE`] = createNodeId(value.data.id);
           }
         });
       }
+      // handle backRefs
+      if (backRefs[nodeToUpdate.id]) {
+        backRefs[nodeToUpdate.id].forEach(ref => {
+          if (!node.relationships[`${ref.type}___NODE`]) {
+            node.relationships[`${ref.type}___NODE`] = [];
+          }
+          node.relationships[`${ref.type}___NODE`].push(createNodeId(ref.id));
+        });
+      }
+
       // handle file downloads
+      let fileNode;
       if (
         node.internal.type === `files` ||
         node.internal.type === `file__file`
@@ -296,6 +307,7 @@ exports.sourceNodes = async (
           node.localFile___NODE = fileNode.id;
         }
       }
+
       node.internal.contentDigest = createContentDigest(node);
       createNode(node);
       console.log('\x1b[32m', `Updated node: ${node.id}`);

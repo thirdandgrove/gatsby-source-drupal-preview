@@ -265,13 +265,26 @@ exports.sourceNodes = async ({
           if (_.isArray(value.data) && value.data.length > 0) {
             value.data.forEach(data => addBackRef(data.id, nodeToUpdate));
             node.relationships[`${key}___NODE`] = _.compact(value.data.map(data => createNodeId(data.id)));
-          } else if (ids[value.data.id]) {
+          } else {
             addBackRef(value.data.id, nodeToUpdate);
             node.relationships[`${key}___NODE`] = createNodeId(value.data.id);
           }
         });
+      } // handle backRefs
+
+
+      if (backRefs[nodeToUpdate.id]) {
+        backRefs[nodeToUpdate.id].forEach(ref => {
+          if (!node.relationships[`${ref.type}___NODE`]) {
+            node.relationships[`${ref.type}___NODE`] = [];
+          }
+
+          node.relationships[`${ref.type}___NODE`].push(createNodeId(ref.id));
+        });
       } // handle file downloads
 
+
+      let fileNode;
 
       if (node.internal.type === `files` || node.internal.type === `file__file`) {
         try {
