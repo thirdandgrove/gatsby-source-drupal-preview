@@ -19,6 +19,8 @@ been used since jsonapi version `8.x-1.0-alpha4`.
 
 ## Preview specific configuration
 
+You will need to have the Drupal module installed, more information on that here: https://www.drupal.org/project/gatsby
+
 in order for preview to work we have to use the `preview` flag in options
 
 ```javascript
