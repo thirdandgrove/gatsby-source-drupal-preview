@@ -279,11 +279,14 @@ exports.sourceNodes = async (
       // handle relationships
       if (nodeToUpdate.relationships) {
         _.each(nodeToUpdate.relationships, (value, key) => {
-          if (!value.data) return;
+          if (!value.data || (_.isArray(value.data) && !value.data.length))
+            return;
           if (_.isArray(value.data) && value.data.length > 0) {
             value.data.forEach(data => addBackRef(data.id, nodeToUpdate));
             node.relationships[`${key}___NODE`] = _.compact(
-              value.data.map(data => createNodeId(data.id))
+              value.data.map(data => {
+                return createNodeId(data.id);
+              })
             );
           } else {
             addBackRef(value.data.id, nodeToUpdate);
@@ -297,7 +300,9 @@ exports.sourceNodes = async (
           if (!node.relationships[`${ref.type}___NODE`]) {
             node.relationships[`${ref.type}___NODE`] = [];
           }
-          node.relationships[`${ref.type}___NODE`].push(createNodeId(ref.id));
+          // guard against undefined node ids
+          ref.id &&
+            node.relationships[`${ref.type}___NODE`].push(createNodeId(ref.id));
         });
       }
 

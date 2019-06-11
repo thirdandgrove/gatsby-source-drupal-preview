@@ -280,11 +280,13 @@ exports.sourceNodes = async ({
 
       if (nodeToUpdate.relationships) {
         _.each(nodeToUpdate.relationships, (value, key) => {
-          if (!value.data) return;
+          if (!value.data || _.isArray(value.data) && !value.data.length) return;
 
           if (_.isArray(value.data) && value.data.length > 0) {
             value.data.forEach(data => addBackRef(data.id, nodeToUpdate));
-            node.relationships[`${key}___NODE`] = _.compact(value.data.map(data => createNodeId(data.id)));
+            node.relationships[`${key}___NODE`] = _.compact(value.data.map(data => {
+              return createNodeId(data.id);
+            }));
           } else {
             addBackRef(value.data.id, nodeToUpdate);
             node.relationships[`${key}___NODE`] = createNodeId(value.data.id);
@@ -297,9 +299,10 @@ exports.sourceNodes = async ({
         backRefs[nodeToUpdate.id].forEach(ref => {
           if (!node.relationships[`${ref.type}___NODE`]) {
             node.relationships[`${ref.type}___NODE`] = [];
-          }
+          } // guard against undefined node ids
 
-          node.relationships[`${ref.type}___NODE`].push(createNodeId(ref.id));
+
+          ref.id && node.relationships[`${ref.type}___NODE`].push(createNodeId(ref.id));
         });
       } // handle file downloads
 
