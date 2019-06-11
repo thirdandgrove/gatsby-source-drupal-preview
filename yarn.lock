@@ -2566,6 +2566,14 @@ timed-out@^4.0.0:
   resolved "https://registry.yarnpkg.com/timed-out/-/timed-out-4.0.1.tgz#f32eacac5a175bea25d7fab565ab3ed8741ef56f"
   integrity sha1-8y6srFoXW+ol1/q1Zas+2HQe9W8=
 
+tiny-async-pool@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/tiny-async-pool/-/tiny-async-pool-1.0.4.tgz#bbac28a39a754576d8d0615d4e2ad35c87da6169"
+  integrity sha512-4gdLvReS3WwmPCxZjj38Go673xhEXlK77fVFA2x+dE2Bf9QzDkVQb3rdO1iJt337ybhir42m4zM2GHJjiuFwoA==
+  dependencies:
+    semver "^5.5.0"
+    yaassertion "^1.0.0"
+
 to-fast-properties@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/to-fast-properties/-/to-fast-properties-2.0.0.tgz#dc5e698cbd079265bc73e0377681a4e4e83f616e"
@@ -2726,6 +2734,11 @@ xstate@^3.1.0:
   version "3.3.3"
   resolved "https://registry.yarnpkg.com/xstate/-/xstate-3.3.3.tgz#64177cd4473d4c2424b3df7d2434d835404b09a9"
   integrity sha512-p0ZYDPWxZZZRAJyD3jaGO9/MYioHuxZp6sjcLhPfBZHAprl4EDrZRGDqRVH9VvK8oa6Nrbpf+U5eNmn8KFwO3g==
+
+yaassertion@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/yaassertion/-/yaassertion-1.0.0.tgz#630c5c44c660d064006f1f15d79bd256d373fc9e"
+  integrity sha512-fepEqRG+/2ZkJBf2ioA4LTOZUWrBN3F2EuKms3zE47M0zqph5aWs6SGiyz9wyzPkowhtiKapHV52IsRBfYCDwA==
 
 yallist@^3.0.0, yallist@^3.0.2:
   version "3.0.3"

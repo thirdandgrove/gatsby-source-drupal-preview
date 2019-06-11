@@ -1,7 +1,7 @@
 {
   "name": "gatsby-source-drupal-preview",
   "description": "Gatsby source plugin with preview",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "author": "Third and Grove <thirdandgrove.com>",
   "contributors": [
     "Kyle Mathews <mathews.kyle@gmail.com>",
@@ -16,7 +16,8 @@
     "bluebird": "^3.5.0",
     "gatsby-source-filesystem": "^2.0.32",
     "lodash": "^4.17.10",
-    "micro": "^9.3.4"
+    "micro": "^9.3.4",
+    "tiny-async-pool": "^1.0.4"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",
