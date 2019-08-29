@@ -1,7 +1,7 @@
 {
   "name": "gatsby-source-drupal-preview",
   "description": "Gatsby source plugin with preview",
-  "version": "0.2.0",
+  "version": "0.2.5",
   "author": "Third and Grove <thirdandgrove.com>",
   "contributors": [
     "Kyle Mathews <mathews.kyle@gmail.com>",
@@ -25,14 +25,6 @@
     "babel-preset-gatsby-package": "^0.1.4",
     "cross-env": "^5.1.4"
   },
-  "homepage": "https://github.com/thirdandgrove/gatsby-source-drupal-preview",
-  "keywords": [
-    "gatsby",
-    "gatsby-plugin",
-    "gatsby-source-plugin",
-    "gatsby-source-plugin-preview",
-    "preview"
-  ],
   "license": "MIT",
   "peerDependencies": {
     "gatsby": "^2.0.15"
